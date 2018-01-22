@@ -6,6 +6,8 @@ import socket
 import dns.resolver
 import threading
 from urlparse import urlparse
+import fileinput
+import subprocess
 
 # set dns
 main_dns = '8.8.8.8'
@@ -52,14 +54,25 @@ def getDomain(PATH,FNAME):
       return maldomain
 
 def main():
+      # with open('result.csv') as f:
+      #       file_line = f.readline().split(',')
+      #       if f.readline() == 'NULL':
+      #             count = 0
+      #       else:
+      #             count = int(file_line[0])
+      try:
+            output = subprocess.check_output(['tail', '-n 1', 'result.csv'], universal_newlines=True)
+            count = int(output.split(',')[0])
+      except:
+            count = 0
+
       # Output file
       result = open('result.csv', 'a')
-      count = 0
       
       for item in getDomain("./","list.txt"):
+            count += 1
             print str(count) + "," + item
             result.write(str(count) + "," + item + "\n")
-            count += 1
       result.close()
 
 if __name__ == '__main__':
@@ -67,6 +80,6 @@ if __name__ == '__main__':
             t = threading.Thread(target=main)
             t.start()
             t.join()
-            time.sleep(3600)
+            time.sleep(2)
 
       print "main thread die"
