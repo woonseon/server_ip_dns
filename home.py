@@ -80,6 +80,6 @@ if __name__ == '__main__':
             t = threading.Thread(target=main)
             t.start()
             t.join()
-            time.sleep(2)
+            time.sleep(3600)
 
       print "main thread die"
