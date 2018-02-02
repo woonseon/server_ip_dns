@@ -8,10 +8,12 @@ import threading
 from urlparse import urlparse
 import fileinput
 import subprocess
+import pytz
+from datetime import datetime
 
 # set dns
 main_dns = '8.8.8.8'
-sub_dns = '4.4.4.4'
+sub_dns = '8.8.4.4'
 
 def nslookup(DOMAIN):
       resolver = dns.resolver.Resolver()
@@ -35,9 +37,9 @@ def getDomain(PATH,FNAME):
 
       if len(maldomain)>0:
             for i in range(0,len(maldomain)):
-            #print i
-                  now = time.localtime()
-                  local_time = "%04d-%02d-%02d %02d:%02d:%02d" % (now.tm_year, now.tm_mon, now.tm_mday, now.tm_hour, now.tm_min, now.tm_sec)
+                  fmt = '%Y-%m-%d %H:%M:%S'
+                  seoul = pytz.timezone('Asia/Seoul')
+                  local_time = seoul.localize(datetime.now())
 
                   if maldomain[i][:4]!="http":
                         maldomain[i]="http://" + maldomain[i].rstrip()
@@ -45,41 +47,31 @@ def getDomain(PATH,FNAME):
                   (dns, ip) = nslookup(urlparse(maldomain[i]).hostname)
                   maldomain[i] = "%s,%s,%s" % ("http" + maldomain[i][4:], str(ip), str(dns))
 
-                  maldomain[i] = local_time + "," + maldomain[i]
-
-                  #print maldomain[i]
+                  maldomain[i] = local_time.strftime(fmt) + "," + maldomain[i]
       else:
             maldomain = "No URL in File"
       
       return maldomain
 
 def main():
-      # with open('result.csv') as f:
-      #       file_line = f.readline().split(',')
-      #       if f.readline() == 'NULL':
-      #             count = 0
-      #       else:
-      #             count = int(file_line[0])
+      # Output file
+      result = open('result.csv', 'a')
       try:
             output = subprocess.check_output(['tail', '-n 1', 'result.csv'], universal_newlines=True)
             count = int(output.split(',')[0])
       except:
             count = 0
-
-      # Output file
-      result = open('result.csv', 'a')
       
       for item in getDomain("./","list.txt"):
             count += 1
-            print str(count) + "," + item
             result.write(str(count) + "," + item + "\n")
       result.close()
 
 if __name__ == '__main__':
+      print "main dns: %s" % main_dns
+      print "sub dns: %s" % sub_dns 
       while True:
             t = threading.Thread(target=main)
             t.start()
             t.join()
             time.sleep(3600)
-
-      print "main thread die"
