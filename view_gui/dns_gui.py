@@ -112,7 +112,7 @@ class MyWindow(QWidget):
                 self.line_list = []
                 self.ip = []
                 
-                f_csv = open(file_name, 'r', encoding='utf-8')
+                f_csv = open(file_path, 'r', encoding='utf-8')
                 rdr = csv.reader(f_csv)
                 for line in rdr:
                     row_numb = self.table_Widget.rowCount()
